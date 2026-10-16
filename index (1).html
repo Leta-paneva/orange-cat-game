@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Orange Cat Sitting — Apartment Demo</title>
+<style>
+  :root { --ink:#493b48; --cream:#fff8e9; --pink:#f6b8bd; --mint:#b8dfc9; --floor:#f3d7b4; }
+  * { box-sizing:border-box; }
+  html, body { width:100%; height:100%; margin:0; overflow:hidden; }
+  body { min-height:100dvh; padding:0; background:#f8e9ef; color:var(--ink); font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif; }
+  .game { position:relative; width:100vw; height:100dvh; overflow:hidden; }
+  header { position:absolute; z-index:10; top:16px; left:18px; right:18px; display:flex; justify-content:space-between; align-items:center; gap:12px; pointer-events:none; }
+  h1 { font-size:clamp(1rem,2.5vw,1.5rem); margin:0; color:#493b48; text-shadow:0 1px 0 #fff; }
+  .pill { background:#ffffffdf; border:2px solid #ead8df; border-radius:999px; padding:8px 13px; font-weight:800; }
+  .room { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; border:0; border-radius:0; box-shadow:none; background:linear-gradient(#d8ecf3 0 48%,#fff0ce 48% 51%,var(--floor) 51%); }
+  .window { position:absolute; left:7%; top:8%; width:24%; height:35%; border:9px solid #fffaf0; border-radius:10px; background:linear-gradient(#9ed8ef 0 58%,#b5d99e 58%); box-shadow:0 3px 0 #d9b9a0; }
+  .window:before { content:""; position:absolute; left:48%; top:0; height:100%; width:7px; background:#fffaf0; }
+  .window:after { content:""; position:absolute; top:48%; left:0; width:100%; height:7px; background:#fffaf0; }
+  .sun { position:absolute; width:30px;height:30px;border-radius:50%;background:#ffe58a;right:14%;top:12%; }
+  .rug { position:absolute; left:26%; bottom:8%; width:48%; height:29%; border-radius:50%; background:#e9a7ad; border:7px solid #f7c7c4; }
+  .sofa { position:absolute; left:8%; bottom:19%; width:26%; height:22%; border-radius:18px 18px 10px 10px; background:#8dbbb2; border:5px solid #699d95; cursor:pointer; box-shadow:0 8px 0 #638e88; }
+  .sofa:before { content:""; position:absolute; left:7%; right:7%; top:12%; height:66%; border-radius:10px; background:#acd6c9; }
+  .sofa:after { content:""; position:absolute; left:42%; top:12%; height:66%; width:5px; background:#8dbbb2; }
+  .plant { position:absolute; right:7%; bottom:17%; width:10%; height:24%; cursor:pointer; }
+  .pot { position:absolute; bottom:0; left:20%; width:60%; height:40%; background:#dc9875; clip-path:polygon(8% 0,92% 0,78% 100%,22% 100%); }
+  .leaf { position:absolute; bottom:28%; left:42%; width:30%; height:60%; border-radius:100% 0 100% 0; background:#6cae7a; transform:rotate(-24deg); }
+  .leaf.l2 { left:14%; bottom:35%; transform:rotate(-55deg); background:#85c88a; }
+  .leaf.l3 { left:54%; bottom:39%; transform:rotate(18deg); background:#559e70; }
+  .fridge { position:absolute; right:8%; top:12%; width:13%; height:37%; border-radius:9px; background:#e8e0d6; border:4px solid #d7d0c8; cursor:pointer; box-shadow:4px 5px 0 #c9bdb3; perspective:700px; }
+  .fridge-inside { position:absolute; inset:3px; overflow:hidden; border-radius:4px; background:linear-gradient(#d8e6e8,#f5f1e8); }
+  .fridge-shelf { position:absolute; left:5%; right:5%; height:4px; background:#b9c9c8; box-shadow:0 2px 0 #ffffffa8; }
+  .fridge-shelf.one { top:35%; }.fridge-shelf.two { top:68%; }
+  .fridge-snack { position:absolute; left:14%; top:42%; font-size:clamp(15px,2.5vw,25px); opacity:0; transform:scale(.7); transition:opacity .2s,transform .2s; }
+  .fridge.has-sandwich .fridge-snack { opacity:1; transform:scale(1); }
+  .fridge-door { position:absolute; z-index:2; inset:0; border-radius:5px; border:2px solid #d7d0c8; background:linear-gradient(90deg,#fffdf8,#f7f0e7); transform-origin:left center; transform:rotateY(0deg); transition:transform .55s cubic-bezier(.2,.7,.2,1); box-shadow:inset -5px 0 0 #e8dfd4; }
+  .fridge-door:before { content:""; position:absolute; left:0; right:0; top:36%; border-top:4px solid #e0d7ce; }
+  .fridge-door:after { content:""; position:absolute; right:12%; top:9%; height:19%; width:4px; border-radius:4px; background:#b6aaa0; box-shadow:0 55px 0 #b6aaa0; }
+  .fridge.open .fridge-door { transform:rotateY(-112deg); }
+  .fridge.open { z-index:4; }
+  .table { position:absolute; left:43%; top:25%; width:18%; height:11%; background:#c58b5d; border:4px solid #a8734a; border-radius:8px; cursor:pointer; }
+  .table:after { content:""; position:absolute; left:10%; right:10%; top:100%; height:45px; border-left:7px solid #a8734a; border-right:7px solid #a8734a; }
+  .sandwich { position:absolute; left:48%; top:18%; font-size:clamp(20px,4vw,36px); cursor:pointer; filter:drop-shadow(1px 2px 0 #b77b52); }
+  .cat { position:absolute; left:47%; bottom:23%; width:105px; height:90px; cursor:pointer; transition:left .45s ease,bottom .45s ease,transform .3s; filter:drop-shadow(0 6px 1px #9c6a4933); z-index:3; }
+  .cat.zoomies { transition:left .18s linear,bottom .18s linear; animation:zoomWobble .16s infinite alternate; }
+  .cat.zoomies .tail { animation:tailWag .09s infinite alternate; }
+  @keyframes zoomWobble { from { transform:rotate(-10deg) scale(1.08); } to { transform:rotate(11deg) scale(.94); } }
+  @keyframes tailWag { from { transform:rotate(-35deg); } to { transform:rotate(25deg); } }
+  .cat .body { position:absolute; left:12px; bottom:0; width:80px; height:53px; background:#f49a35; border:3px solid #d97a25; border-radius:48% 48% 40% 40%; }
+  .cat .head { position:absolute; left:22px; top:2px; width:62px; height:56px; border-radius:50%; background:#ffad43; border:3px solid #d97a25; }
+  .cat .ear { position:absolute; top:-5px; width:23px;height:25px;background:#ffad43;border:3px solid #d97a25; clip-path:polygon(50% 0,100% 100%,0 100%); }
+  .cat .ear.left { left:24px; transform:rotate(-13deg); }.cat .ear.right { right:16px; transform:rotate(13deg); }
+  .eye { position:absolute; top:22px; width:6px;height:8px;border-radius:50%;background:#493b48; }.eye.left{left:15px}.eye.right{right:15px}
+  .nose { position:absolute; top:32px; left:27px; width:8px;height:6px;background:#d96f7c;clip-path:polygon(50% 100%,0 0,100% 0); }
+  .mouth { position:absolute; top:38px; left:24px; font-size:12px; font-weight:bold; }
+  .tail { position:absolute; right:-3px; bottom:23px; width:34px;height:15px;border:8px solid #f49a35;border-left:0;border-bottom:0;border-radius:0 20px 0 0; transform:rotate(-15deg); }
+  .bubble { position:absolute; left:50%; bottom:100%; transform:translateX(-50%); background:white; border:2px solid #f0d9c7; border-radius:14px; padding:7px 10px; font-size:13px; font-weight:800; white-space:nowrap; margin-bottom:8px; }
+  .bottom { position:absolute; z-index:10; left:84px; right:84px; bottom:18px; display:flex; justify-content:center; pointer-events:none; }
+  .message { max-width:min(680px,100%); background:#ffffffed; border:2px solid #ead8df; border-radius:16px; padding:11px 16px; line-height:1.35; box-shadow:0 5px 18px #493b4820; pointer-events:none; }
+  .actions { position:absolute; z-index:12; inset:0; pointer-events:none; }
+  button { border:0; border-radius:18px; padding:12px 15px; background:#6b9e91; color:white; font:inherit; font-weight:900; cursor:pointer; box-shadow:0 4px 0 #4d7e72; pointer-events:auto; }
+  button:hover { filter:brightness(1.06); transform:translateY(-1px); } button:active{transform:translateY(2px);box-shadow:0 2px 0 #4d7e72}
+  #petBtn { position:absolute; left:18px; bottom:18px; width:56px; height:56px; padding:0; border-radius:50%; font-size:29px; display:grid; place-items:center; box-shadow:0 5px 0 #4d7e72,0 5px 15px #493b4828; }
+  #resetBtn { position:absolute; right:18px; bottom:18px; width:48px; height:48px; padding:0; border-radius:50%; font-size:23px; background:#e5a3aa; box-shadow:0 4px 0 #bd7e85; }
+  .hint { display:none; }
+  @media(max-width:600px){.window{width:30%;height:27%}.fridge{width:18%;height:30%}.cat{transform:scale(.8);transform-origin:bottom center}.sofa{width:33%;left:5%}.table{left:38%;width:22%}.bottom{left:78px;right:78px;bottom:18px}.message{font-size:13px;padding:9px 11px}header{top:12px;left:12px;right:12px}#petBtn{left:12px;bottom:12px}#resetBtn{right:12px;bottom:12px}}
+</style>
+</head>
+<body>
+<div class="game">
+  <header><h1>🐾 Orange Cat Sitting</h1><div class="pill" id="mischief">Mischief: 0 😇</div></header>
+  <main class="room" id="room" aria-label="A cozy apartment game">
+    <div class="window"><div class="sun"></div></div>
+    <div class="fridge" id="fridge" role="button" tabindex="0" aria-label="Open fridge" aria-expanded="false" data-object="fridge"><div class="fridge-inside"><div class="fridge-shelf one"></div><div class="fridge-shelf two"></div><div class="fridge-snack" id="fridgeSnack">🥪</div></div><div class="fridge-door"></div></div>
+    <div class="table" role="button" tabindex="0" aria-label="Table" data-object="table"></div>
+    <div class="sandwich" role="button" tabindex="0" aria-label="Sandwich" data-object="sandwich">🥪</div>
+    <div class="sofa" role="button" tabindex="0" aria-label="Sofa" data-object="sofa"></div>
+    <div class="plant" role="button" tabindex="0" aria-label="Plant" data-object="plant"><div class="leaf l2"></div><div class="leaf"></div><div class="leaf l3"></div><div class="pot"></div></div>
+    <div class="rug"></div>
+    <div class="cat" id="cat" role="button" tabindex="0" aria-label="Orange cat">
+      <div class="bubble" id="catBubble">feed me. or else.</div><div class="tail"></div><div class="body"></div><div class="ear left"></div><div class="ear right"></div><div class="head"><div class="eye left"></div><div class="eye right"></div><div class="nose"></div><div class="mouth">ω</div></div>
+    </div>
+  </main>
+  <section class="bottom"><div class="message" id="message" aria-live="polite">The owner has left for the day. Keep the apartment in one piece. The cat has other plans.</div></section><div class="actions"><button id="petBtn" aria-label="Pet cat" title="Pet cat">🐾</button><button id="resetBtn" aria-label="Restart game" title="Restart">↻</button></div>
+  <p class="hint">Try clicking the cat, sandwich, fridge, sofa, table, and plant. This is our tiny first prototype — multiplayer can come later!</p>
+</div>
+<script>
+(() => {
+  const cat = document.getElementById('cat');
+  const message = document.getElementById('message');
+  const bubble = document.getElementById('catBubble');
+  const score = document.getElementById('mischief');
+  const fridge = document.getElementById('fridge');
+  let mischief = 0, sandwichSafe = false, sandwichEaten = false, plantKnocked = false, fridgeOpen = false, zoomiesTimer = null, zoomiesEnd = null;
+  const say = (text, catText) => { message.textContent = text; if (catText) bubble.textContent = catText; };
+  const updateScore = () => { score.textContent = `Mischief: ${mischief} ${mischief === 0 ? '😇' : mischief < 3 ? '😼' : '🚨'}`; };
+  function catMove(left, bottom) { cat.style.left = left; cat.style.bottom = bottom; }
+  function startZoomies() {
+    if (zoomiesTimer) clearInterval(zoomiesTimer);
+    if (zoomiesEnd) clearTimeout(zoomiesEnd);
+    cat.classList.add('zoomies');
+    bubble.textContent = 'NYOOOOOOM!!! 🌀';
+    say('THE SANDWICH HAD CATNIP IN IT!!! The orange cat is doing absolutely UNNECESSARY laps around the apartment! 🌀', 'NYOOOOOOM!!! 🌀');
+    const dash = () => {
+      const left = 4 + Math.random() * 76;
+      const bottom = 8 + Math.random() * 34;
+      catMove(`${left}%`, `${bottom}%`);
+    };
+    dash();
+    zoomiesTimer = setInterval(dash, 260);
+    zoomiesEnd = setTimeout(() => {
+      clearInterval(zoomiesTimer); zoomiesTimer = null; zoomiesEnd = null;
+      cat.classList.remove('zoomies');
+      catMove('47%', '23%');
+      say('The cat finally stops running. It looks deeply proud of itself. The apartment... less so.', 'I HAVE SEEN THE SPEED OF LIGHT.');
+    }, 6500);
+  }
+  document.querySelectorAll('[data-object]').forEach(el => {
+    const act = () => {
+      const obj = el.dataset.object;
+      if (obj === 'fridge') {
+        fridgeOpen = !fridgeOpen;
+        fridge.classList.toggle('open', fridgeOpen);
+        fridge.setAttribute('aria-expanded', String(fridgeOpen));
+        fridge.setAttribute('aria-label', fridgeOpen ? 'Close fridge' : 'Open fridge');
+        if (fridgeOpen) {
+          if (sandwichSafe) say('The fridge swings open. Your sandwich is chilling safely on the shelf. 🥪', 'I am monitoring the sandwich.');
+          else if (sandwichEaten) say('You open the fridge. No sandwich in here. The cat looks suspiciously proud.', 'no evidence here.');
+          else { sandwichSafe = true; fridge.classList.add('has-sandwich'); document.querySelector('.sandwich').style.opacity = '.25'; say('The fridge swings open! You tuck the sandwich safely inside. Responsible human behavior. The cat is offended.', 'HOW DARE YOU.'); catMove('65%','23%'); }
+        } else say('You close the fridge. The sandwich is safe... for now.', 'I will remember this.');
+      } else if (obj === 'sandwich') {
+        if (sandwichSafe) say('That sandwich is safely inside the fridge. Click the fridge to admire your excellent sandwich storage.', 'the fridge cannot stop me.');
+        else if (!sandwichEaten) { sandwichEaten = true; mischief += 1; updateScore(); el.style.opacity = '.25'; startZoomies(); }
+        else say('Only crumbs remain. The cat is vibrating at a frequency only dogs can hear.', 'I AM SPEED.');
+      } else if (obj === 'plant') {
+        if (!plantKnocked) { plantKnocked = true; mischief += 1; updateScore(); el.style.transform = 'rotate(72deg)'; el.style.transformOrigin = 'bottom center'; say('The cat launches itself at the plant. Soil everywhere. The owner has been gone for four minutes.', 'gravity is my enemy.'); catMove('75%','23%'); }
+        else say('The plant has already been defeated. The cat is considering the curtains.', 'round two?');
+      } else if (obj === 'sofa') {
+        say('You try to sit down, but the cat has claimed the sofa. You are now legally required to stand.', 'this is my sofa.'); catMove('16%','23%');
+      } else if (obj === 'table') {
+        mischief += 1; updateScore(); say('The cat hops onto the table and knocks an invisible glass off it. CRASH. Somehow.', 'I regret nothing.'); catMove('43%','35%');
+      }
+    };
+    el.addEventListener('click', act); el.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
+  });
+  const pet = () => { if (Math.random() < .45) { mischief += 1; updateScore(); say('You pet the cat. It accepts exactly one (1) pet, then bites your sleeve and sprints away.', 'TOO MUCH LOVE!!'); catMove('70%','23%'); } else say('The cat purrs for two seconds. Then it remembers it is orange.', 'purrrrr... chaos.'); };
+  cat.addEventListener('click', pet); cat.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pet(); } });
+  document.getElementById('petBtn').addEventListener('click', pet);
+  document.getElementById('resetBtn').addEventListener('click', () => { if (zoomiesTimer) clearInterval(zoomiesTimer); if (zoomiesEnd) clearTimeout(zoomiesEnd); zoomiesTimer=null; zoomiesEnd=null; cat.classList.remove('zoomies'); mischief=0; sandwichSafe=false; sandwichEaten=false; plantKnocked=false; fridgeOpen=false; fridge.classList.remove('open','has-sandwich'); fridge.setAttribute('aria-expanded','false'); fridge.setAttribute('aria-label','Open fridge'); document.querySelector('.sandwich').style.opacity='1'; updateScore(); document.querySelector('.plant').style.transform=''; catMove('47%','23%'); say('The owner has left for the day. Keep the apartment in one piece. The cat has other plans.','feed me. or else.'); });
+})();
+</script>
+</body>
+</html>
